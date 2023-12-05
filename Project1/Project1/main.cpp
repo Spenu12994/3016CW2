@@ -1,10 +1,26 @@
 //STD
 #include <iostream>
 
-//GLEW
-#include <GL/glew.h>
+
+//LEARNOPENGL
+#include <learnopengl/shader_m.h>
+#include <learnopengl/model.h>
+
+//GLAD
+#include <glad/glad.h>
 #include "main.h"
-#include "shaders/LoadShaders.h"
+
+
+
+//assimp
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
+//TEXTURING
+#include "stb_image.h"
+
 
 using namespace std;
 
@@ -20,10 +36,20 @@ enum Buffer_IDs { ArrayBuffer, NumBuffers = 4 };
 //Buffer objects
 GLuint Buffers[NumBuffers];
 
+
 int main()
 {
-    //Initialisation of GLFW
-    glfwInit();
+    //Initialisation of GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        cout << "GLAD failed to initialise\n";
+        return -1;
+    }
+
+    //Loading of shaders
+    Shader Shaders("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
+    Model Rock("media/rock/Rock07-Base.obj");
+    Shaders.use();
     //Initialisation of 'GLFWwindow' object
     GLFWwindow* window = glfwCreateWindow(1280, 720, "Lab5", NULL, NULL);
 
@@ -38,18 +64,7 @@ int main()
     //Binds OpenGL to window
     glfwMakeContextCurrent(window);
 
-    //Initialisation of GLEW
-    glewInit();
 
-    //Load shaders
-    ShaderInfo shaders[] =
-    {
-        { GL_VERTEX_SHADER, "shaders/vertexShader.vert" },
-        { GL_FRAGMENT_SHADER, "shaders/fragmentShader.frag" },
-        { GL_NONE, NULL }
-    };
-
-    program = LoadShaders(shaders);
     glUseProgram(program);
 
     //Sets the viewport size within the window to match the window size of 1280x720
