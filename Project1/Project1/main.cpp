@@ -1,25 +1,33 @@
 //STD
 #include <iostream>
 
-
-//LEARNOPENGL
-#include <learnopengl/shader_m.h>
-#include <learnopengl/model.h>
+//TEXTURING
+#include "stb_image.h"
 
 //GLAD
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include "main.h"
 
+//GLM
+#include "glm/ext/vector_float3.hpp"
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+using namespace glm;
 
 //assimp
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+//LEARNOPENGL
+#include <learnopengl/shader_m.h>
+#include <learnopengl/model.h>
 
-//TEXTURING
-#include "stb_image.h"
+
+
+
 
 
 using namespace std;
@@ -37,6 +45,22 @@ enum Buffer_IDs { ArrayBuffer, NumBuffers = 4 };
 GLuint Buffers[NumBuffers];
 
 
+//Transformations
+//Relative position within world space
+vec3 cameraPosition = vec3(0.0f, 0.0f, 3.0f);
+//The direction of travel
+vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
+//Up position within world space
+vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
+
+//Time
+//Time change
+float deltaTime = 0.0f;
+//Last value of time change
+float lastFrame = 0.0f;
+
+
+
 int main()
 {
     //Initialisation of GLAD
@@ -48,10 +72,14 @@ int main()
 
     //Loading of shaders
     Shader Shaders("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
-    Model Rock("media/rock/Rock07-Base.obj");
+    Model Rock("media/Toilet.obj");
     Shaders.use();
+
     //Initialisation of 'GLFWwindow' object
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Lab5", NULL, NULL);
+    const int windowWidth = 1280;
+    const int windowHeight = 720;
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Lab5", NULL, NULL);
+    
 
     //Checks if window has been successfully instantiated
     if (window == NULL)
@@ -79,26 +107,18 @@ int main()
     0.0f, 0.5f, 0.0f //pos 2
     };
 
-    //Sets index of VAO
-    glGenVertexArrays(NumVAOs, VAOs);
-    //Binds VAO to a buffer
-    glBindVertexArray(VAOs[0]);
-    //Sets indexes of all required buffer objects
-    glGenBuffers(NumBuffers, Buffers);
 
-    //Binds vertex object to array buffer
-    glBindBuffer(GL_ARRAY_BUFFER, Buffers[Triangles]);
-    //Allocates buffer memory for the vertices of the 'Triangles' buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //Model matrix
+    mat4 model = mat4(1.0f);
+    //Scaling to zoom in
+    model = scale(model, vec3(2.0f, 2.0f, 2.0f));
+    //Rotation to look down
+    model = rotate(model, radians(-45.0f), vec3(1.0f, 0.0f, 0.0f));
+    //Movement to position further back
+    model = translate(model, vec3(0.0f, 1.f, -1.5f));
 
-    //Allocates vertex attribute memory for vertex shader
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    //Index of vertex attribute for vertex shader
-    glEnableVertexAttribArray(0);
-
-    //Unbinding
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //Projection matrix
+    mat4 projection = perspective(radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
     //Render loop
     while (glfwWindowShouldClose(window) == false)
@@ -109,9 +129,17 @@ int main()
         //Rendering
         glClearColor(0.25f, 0.0f, 1.0f, 1.0f); //Colour to display on cleared window
         glClear(GL_COLOR_BUFFER_BIT); //Clears the colour buffer
+        glClear(GL_DEPTH_BUFFER_BIT); //Might need
 
-        glBindVertexArray(VAOs[0]); //Bind buffer object to render
-        glDrawArrays(GL_TRIANGLES, 0, 3); //Render buffer object
+        glEnable(GL_CULL_FACE); //Discards all back-facing triangles
+
+        //Transformations
+        mat4 view = lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp); //Sets the position of the viewer, the movement direction in relation to it & the world up direction
+        mat4 mvp = projection * view * model;
+        Shaders.setMat4("mvpIn", mvp); //Setting of uniform with Shader class
+
+        //Drawing
+        Rock.Draw(Shaders);
 
         //Refreshing
         glfwSwapBuffers(window); //Swaps the colour buffer

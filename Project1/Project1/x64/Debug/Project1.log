@@ -1,4 +1,2 @@
 ﻿  main.cpp
-F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(51,5): error C2065: 'Model': undeclared identifier
-F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(51,11): error C2146: syntax error: missing ';' before identifier 'Rock'
-F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(51,11): error C3861: 'Rock': identifier not found
+  Project1.vcxproj -> F:\store\3016 cw2\3016CW2\Project1\x64\Debug\Project1.exe
