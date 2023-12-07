@@ -1,0 +1,8 @@
+boatLoad of OBJs and quick switching:
+https://rdmilligan.wordpress.com/2015/11/13/blender-animation-in-opengl/
+
+Skeleton animation:
+https://learnopengl.com/Guest-Articles/2020/Skeletal-Animation
+https://ogldev.org/www/tutorial38/tutorial38.html
+https://www.youtube.com/watch?v=ZzMnu3v_MOw
+https://www.youtube.com/watch?v=GZQkwx10p-8
