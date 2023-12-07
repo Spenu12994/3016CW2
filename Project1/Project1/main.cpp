@@ -71,23 +71,16 @@ float cameraLastYPos = 600.0f / 2.0f;
 
 int main()
 {
-    //Initialisation of GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        cout << "GLAD failed to initialise\n";
-        return -1;
-    }
 
-    //Loading of shaders
-    Shader Shaders("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
-    Model Rock("media/Toilet.obj");
-    Shaders.use();
-
+    
+    
+    
+    //Initialisation of GLFW
+    glfwInit();
     //Initialisation of 'GLFWwindow' object
     const int windowWidth = 1280;
     const int windowHeight = 720;
     GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Lab5", NULL, NULL);
-    
 
     //Checks if window has been successfully instantiated
     if (window == NULL)
@@ -100,17 +93,19 @@ int main()
     //Binds OpenGL to window
     glfwMakeContextCurrent(window);
 
-    //Sets cursor to automatically bind to window & hides cursor pointer
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    //Binds OpenGL to window
-    glfwMakeContextCurrent(window);
+    //Initialisation of GLAD
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        cout << "GLAD failed to initialise\n";
+        return -1;
+    }
 
+    //Loading of shaders
+    Shader Shaders("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
+    Model Rock("media/Rock/Rock07-Base.obj");
+    Shaders.use();
 
-    glUseProgram(program);
-
-    //Sets the viewport size within the window to match the window size of 1280x720
-    glViewport(0, 0, 1280, 720);
 
     //Sets the framebuffer_size_callback() function as the callback for the window resizing event
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -118,17 +113,32 @@ int main()
     //Sets the mouse_callback() function as the callback for the mouse movement event
     glfwSetCursorPosCallback(window, mouse_callback);
 
+
+    //Binds OpenGL to window
+    glfwMakeContextCurrent(window);
+
+    //Sets cursor to automatically bind to window & hides cursor pointer
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
+    glUseProgram(program);
+
+    //Sets the viewport size within the window to match the window size of 1280x720
+    glViewport(0, 0, 1280, 720);
+
+  
+
+    
     //Model matrix
     mat4 model = mat4(1.0f);
     //Scaling to zoom in
-    model = scale(model, vec3(2.0f, 2.0f, 2.0f));
-    //Rotation to look down
-    model = rotate(model, radians(-45.0f), vec3(1.0f, 0.0f, 0.0f));
-    //Movement to position further back
-    model = translate(model, vec3(0.0f, 1.f, -1.5f));
+    model = scale(model, vec3(0.025f, 0.025f, 0.025f));
+
+    
 
     //Projection matrix
     mat4 projection = perspective(radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+
 
     //Render loop
     while (glfwWindowShouldClose(window) == false)

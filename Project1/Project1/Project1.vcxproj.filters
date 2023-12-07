@@ -19,10 +19,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="vertexShader.vert">
+    <None Include="shaders\vertexShader.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="fragmentShader.frag">
+    <None Include="shaders\fragmentShader.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

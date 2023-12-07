@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>F:\store\3016 cw2\3016CW2\Project1\include;F:\store\3016 cw2\3016CW2\Project1\lib;$(IncludePath)</IncludePath>
+    <IncludePath>F:\store\3016 cw2\3016CW2\Project1\include;F:\store\3016 cw2\3016CW2\Project1\lib;C:\Users\sunderhill\Documents\GitHub\3016CW2\Project1\include;C:\Users\sunderhill\Documents\GitHub\3016CW2\Project1\lib;$(IncludePath)</IncludePath>
     <LibraryPath>F:\store\3016 cw2\3016CW2\Project1\include;F:\store\3016 cw2\3016CW2\Project1\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -132,9 +132,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="fragmentShader.frag" />
     <None Include="packages.config" />
-    <None Include="vertexShader.vert" />
+    <None Include="shaders\fragmentShader.frag" />
+    <None Include="shaders\vertexShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />
