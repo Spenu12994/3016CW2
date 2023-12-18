@@ -1,7 +1,3 @@
-﻿  glad.c
-  LoadShaders.cpp
-  main.cpp
+﻿  main.cpp
 F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(137,22): warning C4244: 'argument': conversion from 'double' to 'unsigned int', possible loss of data
-  stbImageLoader.cpp
-  Generating Code...
   Project1.vcxproj -> F:\store\3016 cw2\3016CW2\Project1\x64\Debug\Project1.exe
