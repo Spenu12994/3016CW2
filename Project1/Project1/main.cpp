@@ -1,22 +1,17 @@
 //STD
 #include <iostream>
 
-//TEXTURING
-#include "stb_image.h"
-
 //GLAD
 #include <glad/glad.h>
+
+//glfw
 #include <GLFW/glfw3.h>
-#include "main.h"
 
 //GLM
 #include "glm/ext/vector_float3.hpp"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp> // GLM: access to the value_ptr
 
-using namespace glm;
-
-//assimp
+//Assimp
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -25,14 +20,15 @@ using namespace glm;
 #include <learnopengl/shader_m.h>
 #include <learnopengl/model.h>
 
-
-
-
-
+//GENERAL
+#include "main.h"
 
 using namespace std;
+using namespace glm;
 
-GLuint program;
+//Window
+int windowWidth;
+int windowHeight;
 
 //VAO vertex attribute positions in correspondence to vertex attribute type
 enum VAO_IDs { Triangles, Indices, Colours, Textures, NumVAOs = 2 };
@@ -44,7 +40,6 @@ enum Buffer_IDs { ArrayBuffer, NumBuffers = 4 };
 //Buffer objects
 GLuint Buffers[NumBuffers];
 
-
 //Transformations
 //Relative position within world space
 vec3 cameraPosition = vec3(0.0f, 0.0f, 3.0f);
@@ -53,13 +48,7 @@ vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
 //Up position within world space
 vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
 
-//Time
-//Time change
-float deltaTime = 0.0f;
-//Last value of time change
-float lastFrame = 0.0f;
-
-//Camera sideways rotation
+//Camera sidways rotation
 float cameraYaw = -90.0f;
 //Camera vertical rotation
 float cameraPitch = 0.0f;
@@ -69,17 +58,25 @@ bool mouseFirstEntry = true;
 float cameraLastXPos = 800.0f / 2.0f;
 float cameraLastYPos = 600.0f / 2.0f;
 
+//Model-View-Projection Matrix
+mat4 mvp;
+mat4 model;
+mat4 view;
+mat4 projection;
+
+//Time
+//Time change
+float deltaTime = 0.0f;
+//Last value of time change
+float lastFrame = 0.0f;
+
 int main()
 {
-
-    
-    
-    
     //Initialisation of GLFW
     glfwInit();
     //Initialisation of 'GLFWwindow' object
-    const int windowWidth = 1280;
-    const int windowHeight = 720;
+    windowWidth = 1280;
+    windowHeight = 720;
     GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Lab5", NULL, NULL);
 
     //Checks if window has been successfully instantiated
@@ -90,9 +87,11 @@ int main()
         return -1;
     }
 
+    //Sets cursor to automatically bind to window & hides cursor pointer
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     //Binds OpenGL to window
     glfwMakeContextCurrent(window);
-
 
     //Initialisation of GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -103,9 +102,12 @@ int main()
 
     //Loading of shaders
     Shader Shaders("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
-    Model Rock("media/Rock/Rock07-Base.obj");
+    Model Rock("media/rock/Rock07-Base.obj");
+
     Shaders.use();
 
+    //Sets the viewport size within the window to match the window size of 1280x720
+    glViewport(0, 0, 1280, 720);
 
     //Sets the framebuffer_size_callback() function as the callback for the window resizing event
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -114,35 +116,72 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
 
 
-    //Binds OpenGL to window
-    glfwMakeContextCurrent(window);
-
-    //Sets cursor to automatically bind to window & hides cursor pointer
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-
-    glUseProgram(program);
-
-    //Sets the viewport size within the window to match the window size of 1280x720
-    glViewport(0, 0, 1280, 720);
-
-  
-
-    
-    //Model matrix
-    mat4 model = mat4(1.0f);
-    //Scaling to zoom in
-    model = scale(model, vec3(0.025f, 0.025f, 0.025f));
-
-    
 
     //Projection matrix
-    mat4 projection = perspective(radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+    projection = perspective(radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+
+
+
+
+
+
+
+
+
+
+
+    //Code for adding tree instances
+    unsigned int amount = 10;
+    glm::mat4* modelMatrices;
+    modelMatrices = new glm::mat4[amount];
+    srand(glfwGetTime()); // initialize random seed	
+    float radius = 5.0;//how wide is our circle
+    float offset = 1.0f;//how far from our circle can the object deviate (higher = more scattered, lower = more circular)
+    for (unsigned int i = 0; i < amount; i++)
+    {
+        //origin variables
+        //set these to be added at the end of translate calculations to shift the tree origin to a specific point
+        float originx = 0.0f;
+        float originy = 0.0f;
+        float originz = 0.0f;
+
+
+        glm::mat4 model = glm::mat4(1.0f);
+        // 1. translation: displace along circle with 'radius' in range [-offset, offset]
+        float angle = (float)i / (float)amount * 360.0f;
+        float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float x = sin(angle) * radius + displacement;
+        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float y = 0;
+        float z = cos(angle) * radius + displacement;
+        model = glm::translate(model, glm::vec3(x+originx, y+originy, z+originz));
+
+        // 2. scale: scale between 0.05 and 0.25f
+        float scale = static_cast<float>((rand() % 5) / 1000.0 + 0.005);
+        model = glm::scale(model, glm::vec3(scale));
+
+        // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+        
+
+        // 4. now add to list of matrices
+        modelMatrices[i] = model;
+    }
+
+
+
+    //Skybox Cubemap
+
+
 
 
     //Render loop
     while (glfwWindowShouldClose(window) == false)
     {
+        //Time
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         //Input
         ProcessUserInput(window); //Takes user input
 
@@ -152,14 +191,38 @@ int main()
         glClear(GL_DEPTH_BUFFER_BIT); //Might need
 
         glEnable(GL_CULL_FACE); //Discards all back-facing triangles
+        glCullFace(GL_BACK);
 
-        //Transformations
-        mat4 view = lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp); //Sets the position of the viewer, the movement direction in relation to it & the world up direction
-        mat4 mvp = projection * view * model;
-        Shaders.setMat4("mvpIn", mvp); //Setting of uniform with Shader class
 
-        //Drawing
+        //Model matrix
+        model = mat4(1.0f);
+        //Scaling to zoom in
+        model = scale(model, vec3(0.025f, 0.025f, 0.025f));
+        //Looking straight forward
+        model = rotate(model, radians(0.0f), vec3(1.0f, 0.0f, 0.0f));
+        //Elevation to look upon terrain
+        model = translate(model, vec3(0.0f, -2.f, -1.5f));
+
+        //Transformations & Drawing
+        //Viewer orientation
+        view = lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp); //Sets the position of the viewer, the movement direction in relation to it & the world up direction
+
+
+        Shaders.setMat4("projection", projection);
+        Shaders.setMat4("view", view);
+        Shaders.setMat4("model", model);
+        
+        //Rock
         Rock.Draw(Shaders);
+
+
+        //Tree (changes MVP in relation to past values)
+        for (unsigned int i = 0; i < amount; i++)
+        {            
+            Shaders.setMat4("model", modelMatrices[i]);
+            Rock.Draw(Shaders);//PUT ANY MODEL HERE TO HAVE THE INSTANCING RUN OVER IT
+        }
+
 
         //Refreshing
         glfwSwapBuffers(window); //Swaps the colour buffer
@@ -176,35 +239,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     //Resizes window based on contemporary width & height values
     glViewport(0, 0, width, height);
-}
-
-void ProcessUserInput(GLFWwindow* WindowIn)
-{
-    //Closes window on 'exit' key press
-    if (glfwGetKey(WindowIn, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(WindowIn, true);
-    }
-
-    //Extent to which to move in one instance
-    const float movementSpeed = 1.0f * deltaTime;
-    //WASD controls
-    if (glfwGetKey(WindowIn, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        cameraPosition += movementSpeed * cameraFront;
-    }
-    if (glfwGetKey(WindowIn, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        cameraPosition -= movementSpeed * cameraFront;
-    }
-    if (glfwGetKey(WindowIn, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        cameraPosition -= normalize(cross(cameraFront, cameraUp)) * movementSpeed;
-    }
-    if (glfwGetKey(WindowIn, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        cameraPosition += normalize(cross(cameraFront, cameraUp)) * movementSpeed;
-    }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -250,4 +284,77 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     direction.y = sin(radians(cameraPitch));
     direction.z = sin(radians(cameraYaw)) * cos(radians(cameraPitch));
     cameraFront = normalize(direction);
+}
+
+void ProcessUserInput(GLFWwindow* WindowIn)
+{
+    //Closes window on 'exit' key press
+    if (glfwGetKey(WindowIn, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(WindowIn, true);
+    }
+
+    //Extent to which to move in one instance
+    const float movementSpeed = 1.0f * deltaTime;
+    //WASD controls
+    if (glfwGetKey(WindowIn, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        cameraPosition += movementSpeed * cameraFront;
+    }
+    if (glfwGetKey(WindowIn, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        cameraPosition -= movementSpeed * cameraFront;
+    }
+    if (glfwGetKey(WindowIn, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cameraPosition -= normalize(cross(cameraFront, cameraUp)) * movementSpeed;
+    }
+    if (glfwGetKey(WindowIn, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cameraPosition += normalize(cross(cameraFront, cameraUp)) * movementSpeed;
+    }
+}
+
+//function to load and set cubemap
+unsigned int loadCubemap(vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
+
+
+
+
+
+
+
+//shouldnt be used!
+void SetMatrices(Shader& ShaderProgramIn)
+{
+    mvp = projection * view * model; //Setting of MVP
+    ShaderProgramIn.setMat4("model", mvp); //Setting of uniform with Shader class
 }

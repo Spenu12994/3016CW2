@@ -18,7 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="shaders\vertexShader.vert">
       <Filter>shaders</Filter>
     </None>
