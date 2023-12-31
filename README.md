@@ -23,3 +23,6 @@ https://www.youtube.com/watch?v=sP_kiODC25Q&t=1258s
 
 Stack overflow for error solving(some examples):
 https://stackoverflow.com/questions/39377679/scaling-and-moving-3d-object-with-opengl
+
+Textures:
+https://images.pexels.com/photos/326311/pexels-photo-326311.jpeg?cs=srgb&dl=pexels-pixabay-326311.jpg&fm=jpg
