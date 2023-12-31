@@ -264,11 +264,12 @@ int main()
         }
 
 
-        //move Light
-        float lightDiff = 10;
+        //move Light as sun
+        float lightDiff = 10; // the higher the number, the slower the sun rotates
+        float lightRadius = 100; //higher = further from world centre
         lightPositions[0] = vec3((lightX/lightDiff), (lightY/lightDiff), (0.0f));
 
-        float lightRadius = 100;
+        
 
 
         if (lightDirX == 0) {
@@ -298,6 +299,8 @@ int main()
         else if (lightY <= (lightRadius * -1)) {
             lightDirY = 1;
         }
+
+
 
         // render light source (simply re-render sphere at light positions)
         // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
