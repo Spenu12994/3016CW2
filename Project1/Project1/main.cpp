@@ -23,8 +23,26 @@
 //GENERAL
 #include "main.h"
 
+//SPECIALISED
+#include <FastNoiseLite.h>
+
 using namespace std;
 using namespace glm;
+
+
+//Procedual Generation
+
+#define RENDER_DISTANCE 64 //Render width of map
+#define MAP_SIZE RENDER_DISTANCE * RENDER_DISTANCE //Size of map in x & z space
+
+//Amount of chunks across one dimension
+const int squaresRow = RENDER_DISTANCE - 1;
+//Two triangles per square to form a 1x1 chunk
+const int trianglesPerSquare = 2;
+//Amount of triangles on map
+const int trianglesGrid = squaresRow * squaresRow * trianglesPerSquare;
+
+
 
 //Window
 int windowWidth;
@@ -70,6 +88,9 @@ float deltaTime = 0.0f;
 //Last value of time change
 float lastFrame = 0.0f;
 
+
+
+
 int main()
 {
     //Initialisation of GLFW
@@ -103,6 +124,7 @@ int main()
     //Loading of shaders
     Shader Shaders("shaders/vertexShader.vert", "shaders/fragmentShader.frag");
     Model Rock("media/rock/Rock07-Base.obj");
+    Model Sign("media/Signature/untitled.obj");
 
     Shaders.use();
 
@@ -120,13 +142,7 @@ int main()
     //Projection matrix
     projection = perspective(radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
-
-
-
-
-
-
-
+    //Procedural Generation
 
 
 
@@ -169,6 +185,8 @@ int main()
 
 
 
+
+
     //Skybox Cubemap
 
 
@@ -194,6 +212,7 @@ int main()
         glCullFace(GL_BACK);
 
 
+      
         //Model matrix
         model = mat4(1.0f);
         //Scaling to zoom in
@@ -213,14 +232,15 @@ int main()
         Shaders.setMat4("model", model);
         
         //Rock
-        Rock.Draw(Shaders);
-
+        //Rock.Draw(Shaders);
+        Sign.Draw(Shaders);
 
         //Tree (changes MVP in relation to past values)
         for (unsigned int i = 0; i < amount; i++)
         {            
             Shaders.setMat4("model", modelMatrices[i]);
             Rock.Draw(Shaders);//PUT ANY MODEL HERE TO HAVE THE INSTANCING RUN OVER IT
+            
         }
 
 
