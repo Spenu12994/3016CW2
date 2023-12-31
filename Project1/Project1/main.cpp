@@ -127,6 +127,23 @@ int main()
     Model Sign("media/Signature/untitled.obj");
 
     Shaders.use();
+    Shaders.setVec3("albedo", 0.5f, 0.0f, 0.0f);
+    Shaders.setFloat("ao", 1.0f);
+
+
+    // lights
+    // ------
+    glm::vec3 lightPositions[] = {
+        glm::vec3(0.0f, 0.0f, 10.0f),
+    };
+    glm::vec3 lightColors[] = {
+        glm::vec3(1500.0f, 1500.0f, 1500.0f),
+    };
+
+
+
+
+
 
     //Sets the viewport size within the window to match the window size of 1280x720
     glViewport(0, 0, 1280, 720);
@@ -189,9 +206,13 @@ int main()
 
     //Skybox Cubemap
 
-
-
-
+    //pbr lighting
+    float lightIterate = 10;
+    float lightX = 50;
+    float lightY = 100;
+    int lightHeightDiff = 100; 
+    int lightDirX = 0;//0=left 1= right
+    int lightDirY = 0; //0=down 1=up
     //Render loop
     while (glfwWindowShouldClose(window) == false)
     {
@@ -211,7 +232,7 @@ int main()
         glEnable(GL_CULL_FACE); //Discards all back-facing triangles
         glCullFace(GL_BACK);
 
-
+        
       
         //Model matrix
         model = mat4(1.0f);
@@ -225,7 +246,6 @@ int main()
         //Transformations & Drawing
         //Viewer orientation
         view = lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp); //Sets the position of the viewer, the movement direction in relation to it & the world up direction
-
 
         Shaders.setMat4("projection", projection);
         Shaders.setMat4("view", view);
@@ -244,6 +264,60 @@ int main()
         }
 
 
+        //move Light
+        float lightDiff = 10;
+        lightPositions[0] = vec3((lightX/lightDiff), (lightY/lightDiff), (0.0f));
+
+        float lightRadius = 100;
+
+
+        if (lightDirX == 0) {
+            lightX = lightX - 1;
+        }
+        else {
+            lightX = lightX + 1;
+        }
+
+        if (lightDirY == 0) {
+            lightY = lightY - 1;
+        }
+        else {
+            lightY = lightY + 1;
+        }
+
+        if (lightX >= lightRadius) {
+            lightDirX = 0;
+        }
+        else if (lightX <= (lightRadius * -1)) {
+            lightDirX = 1;
+        }
+
+        if (lightY >= lightRadius) {
+            lightDirY = 0;
+        }
+        else if (lightY <= (lightRadius * -1)) {
+            lightDirY = 1;
+        }
+
+        // render light source (simply re-render sphere at light positions)
+        // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
+        // keeps the codeprint small.
+        for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+        {
+            glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+            newPos = lightPositions[i];
+            Shaders.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+            Shaders.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, newPos);
+            model = glm::scale(model, glm::vec3(0.5f));
+            Shaders.setMat4("model", model);
+            Shaders.setMat3("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+        }
+
+
+
         //Refreshing
         glfwSwapBuffers(window); //Swaps the colour buffer
         glfwPollEvents(); //Queries all GLFW events
@@ -254,6 +328,8 @@ int main()
 
     return 0;
 }
+
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
