@@ -83,7 +83,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 #define RENDER_DISTANCE 128 //Render width of map
-#define MAP_SIZE RENDER_DISTANCE * RENDER_DISTANCE //Size of map in x & z space
+#define MAP_SIZE (RENDER_DISTANCE * RENDER_DISTANCE) //Size of map in x & z space
 
 //Amount of chunks across one dimension
 const int squaresRow = RENDER_DISTANCE - 1;
@@ -92,6 +92,7 @@ const int trianglesPerSquare = 2;
 //Amount of triangles on map
 const int trianglesGrid = squaresRow * squaresRow * trianglesPerSquare;
 
+float terrainSize = 5.0f;
 
 int main()
 {
@@ -130,6 +131,7 @@ int main()
     
     Model Rock("media/rock/Rock07-Base.obj");
     Model Sign("media/Signature/untitled.obj");
+    Model Tree("media/Tree/tree.obj");
 
     Shaders.use();
     Shaders.setVec3("albedo", 0.5f, 0.0f, 0.0f);
@@ -165,45 +167,6 @@ int main()
     projection = perspective(radians(45.0f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
 
 
-
-    //Code for adding tree instances
-    unsigned int amount = 10;
-    glm::mat4* modelMatrices;
-    modelMatrices = new glm::mat4[amount];
-    srand(glfwGetTime()); // initialize random seed	
-    float radius = 5.0;//how wide is our circle
-    float offset = 1.0f;//how far from our circle can the object deviate (higher = more scattered, lower = more circular)
-    for (unsigned int i = 0; i < amount; i++)
-    {
-        //origin variables
-        //set these to be added at the end of translate calculations to shift the tree origin to a specific point
-        float originx = 0.0f;
-        float originy = 0.0f;
-        float originz = 0.0f;
-
-
-        glm::mat4 model = glm::mat4(1.0f);
-        // 1. translation: displace along circle with 'radius' in range [-offset, offset]
-        float angle = (float)i / (float)amount * 360.0f;
-        float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float x = sin(angle) * radius + displacement;
-        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float y = 0;
-        float z = cos(angle) * radius + displacement;
-        model = glm::translate(model, glm::vec3(x+originx, y+originy, z+originz));
-
-        // 2. scale: scale between 0.05 and 0.25f
-        float scale = static_cast<float>((rand() % 5) / 1000.0 + 0.005);
-        model = glm::scale(model, glm::vec3(scale));
-
-        // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
-        
-
-        // 4. now add to list of matrices
-        modelMatrices[i] = model;
-    }
-
-
     //Procedural Terrain----
 
     //Assigning perlin noise type for map
@@ -217,6 +180,13 @@ int main()
     //Sets seed for noise
     TerrainNoise.SetSeed(terrainSeed);
 
+    //Biome noise
+    FastNoiseLite BiomeNoise;
+    BiomeNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+    BiomeNoise.SetFrequency(0.05f);
+    int biomeSeed = rand() % 100;
+    TerrainNoise.SetSeed(biomeSeed);
+
     // load and create a texture
 // -------------------------
 // load image, create texture and generate mipmaps
@@ -229,71 +199,240 @@ int main()
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-
     
-    std::vector<float> vertices;
-    float yScale = 10.0f, yShift =10.0f;
-    int rez = 1;
-    width = 128;
-    height = 128;
-    for (int i = 0; i < height; i++)
+    //Generation of height map vertices
+    GLfloat terrainVertices[MAP_SIZE][6];
+
+    //Terrain vertice index
+    int i = 0;
+    //Using x & y nested for loop in order to apply noise 2-dimensionally
+    for (int y = 0; y < RENDER_DISTANCE; y++)
     {
-        for (int j = 0; j < width; j++)
+        for (int x = 0; x < RENDER_DISTANCE; x++)
         {
-            
+            //Setting of height from 2D noise value at respective x & y coordinate
+            terrainVertices[i][1] = TerrainNoise.GetNoise((float)x, (float)y);
 
-            GLfloat y = TerrainNoise.GetNoise((float)j, (float)i);
+            //Retrieval of biome to set
+            float biomeValue = BiomeNoise.GetNoise((float)x, (float)y);
 
-            // vertex
-            vertices.push_back(-height / 2.0f + height * i / (float)height);   // vx
-            vertices.push_back(y * yScale - yShift);   // vy
-            vertices.push_back(-width / 2.0f + width * j / (float)width);   // vz
-        }
-    }
-    std::cout << "Loaded " << vertices.size() / 3 << " vertices" << std::endl;
-
-    std::vector<unsigned> indices;
-    for (unsigned i = 0; i < height - 1; i += rez)
-    {
-        for (unsigned j = 0; j < width; j += rez)
-        {
-            for (unsigned k = 0; k < 2; k++)
+            if (biomeValue <= -0.75f) //Plains
             {
-                indices.push_back(j + width * (i + k * rez));
+                terrainVertices[i][3] = 0.0f;
+                terrainVertices[i][4] = 0.75f;
+                terrainVertices[i][5] = 0.25f;
             }
+            else //Desert
+            {
+                terrainVertices[i][3] = 1.0f;
+                terrainVertices[i][4] = 1.0f;
+                terrainVertices[i][5] = 0.5f;
+            }
+
+            i++;
         }
     }
-    std::cout << "Loaded " << indices.size() << " indices" << std::endl;
 
-    const int numStrips = (height - 1) / rez;
-    const int numTrisPerStrip = (width / rez) * 2 - 2;
-    std::cout << "Created lattice of " << numStrips << " strips with " << numTrisPerStrip << " triangles each" << std::endl;
-    std::cout << "Created " << numStrips * numTrisPerStrip << " triangles total" << std::endl;
+    //Positions to start drawing from
+    float drawingStartPosition = 1.0f;
+    float columnVerticesOffset = drawingStartPosition;
+    float rowVerticesOffset = drawingStartPosition;
 
-    // first, configure the cube's VAO (and terrainVBO + terrainIBO)
-    unsigned int terrainVAO, terrainVBO, terrainIBO;
-    glGenVertexArrays(1, &terrainVAO);
-    glBindVertexArray(terrainVAO);
+    int rowIndex = 0;
+    for (int i = 0; i < MAP_SIZE; i++)
+    {
+        //Generation of x & z vertices for horizontal plane
+        terrainVertices[i][0] = columnVerticesOffset;
+        terrainVertices[i][2] = rowVerticesOffset;
 
-    glGenBuffers(1, &terrainVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+        //Determination of biomes based on height
+        if (terrainVertices[i][1] >= (0.5f / 8.0f))
+        {
+            //Snow
+            terrainVertices[i][3] = 1.0f;
+            terrainVertices[i][4] = 1.0f;
+            terrainVertices[i][5] = 1.0f;
+        }
+        if (terrainVertices[i][1] <= (-0.3f))
+        {
+            //water
+            terrainVertices[i][3] = 0.161f;
+            terrainVertices[i][4] = 0.525f;
+            terrainVertices[i][5] = 0.988f;
+        }
+        //Shifts x position across for next triangle along grid
+        columnVerticesOffset = columnVerticesOffset + -0.0625f;
 
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        //Indexing of each chunk within row
+        rowIndex++;
+        //True when all triangles of the current row have been generated
+        if (rowIndex == RENDER_DISTANCE)
+        {
+            //Resets for next row of triangles
+            rowIndex = 0;
+            //Resets x position for next row of triangles
+            columnVerticesOffset = drawingStartPosition;
+            //Shifts y position
+            rowVerticesOffset = rowVerticesOffset + -0.0625f;
+        }
+    }
+
+    //Generation of height map indices
+    GLuint terrainIndices[trianglesGrid][3];
+
+    //Positions to start mapping indices from
+    int columnIndicesOffset = 0;
+    int rowIndicesOffset = 0;
+
+    //Generation of map indices in the form of chunks (1x1 right angle triangle squares)
+    rowIndex = 0;
+    for (int i = 0; i < trianglesGrid - 1; i += 2)
+    {
+        terrainIndices[i][0] = columnIndicesOffset + rowIndicesOffset; //top left
+        terrainIndices[i][2] = RENDER_DISTANCE + columnIndicesOffset + rowIndicesOffset; //bottom left
+        terrainIndices[i][1] = 1 + columnIndicesOffset + rowIndicesOffset; //top right
+
+        terrainIndices[i + 1][0] = 1 + columnIndicesOffset + rowIndicesOffset; //top right
+        terrainIndices[i + 1][2] = RENDER_DISTANCE + columnIndicesOffset + rowIndicesOffset; //bottom left
+        terrainIndices[i + 1][1] = 1 + RENDER_DISTANCE + columnIndicesOffset + rowIndicesOffset; //bottom right
+
+        //Shifts x position across for next chunk along grid
+        columnIndicesOffset = columnIndicesOffset + 1;
+
+        //Indexing of each chunk within row
+        rowIndex++;
+
+        //True when all chunks of the current row have been generated
+        if (rowIndex == squaresRow)
+        {
+            //Resets for next row of chunks
+            rowIndex = 0;
+            //Resets x position for next row of chunks
+            columnIndicesOffset = 0;
+            //Shifts y position
+            rowIndicesOffset = rowIndicesOffset + RENDER_DISTANCE;
+        }
+    }
+
+    //Sets index of VAO
+    glGenVertexArrays(NumVAOs, VAOs);
+    //Binds VAO to a buffer
+    glBindVertexArray(VAOs[0]);
+    //Sets indexes of all required buffer objects
+    glGenBuffers(NumBuffers, Buffers);
+    //glGenBuffers(1, &EBO);
+
+    //Binds vertex object to array buffer
+    glBindBuffer(GL_ARRAY_BUFFER, Buffers[Triangles]);
+    //Allocates buffer memory for the vertices of the 'Triangles' buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(terrainVertices), terrainVertices, GL_STATIC_DRAW);
+
+    //Binding & allocation for indices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Buffers[Indices]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(terrainIndices), terrainIndices, GL_STATIC_DRAW);
+
+    //Allocation & indexing of vertex attribute memory for vertex shader
+    //Positions
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glGenBuffers(1, &terrainIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainIBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
+    //Colours
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    //Unbinding
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+    
+
+
+    //----------------------------------------------------------------------------------------------------------------------------------------
+    // 
+    //Code for adding tree instances
+    unsigned int treeAmount = 1000;
+    glm::mat4* modelTreeMatrices;
+    modelTreeMatrices = new glm::mat4[treeAmount];
+    srand(glfwGetTime()); // initialize random seed	
+    for (unsigned int i = 0; i < treeAmount; i++)
+    {
+        //origin variables
+        //set these to be added at the end of translate calculations to shift the tree origin to a specific point
+        float originx = 0.0f;
+        float originy = 0.0f;
+        float originz = 0.0f;
+
+
+        int verticeLocal = rand() % MAP_SIZE;
+
+
+        glm::mat4 model = glm::mat4(1.0f);
+        float x = (terrainVertices[verticeLocal][0]) * terrainSize;
+        float y = (terrainVertices[verticeLocal][1]) * terrainSize;
+        float z = (terrainVertices[verticeLocal][2]) * terrainSize;
+        model = glm::translate(model, glm::vec3(x + originx, y + originy, z + originz));
+
+        // 2. scale: scale between 0.05 and 0.25f
+        float scale = static_cast<float>((rand() % 5) / 1000.0 + 0.05);
+        model = glm::scale(model, glm::vec3(scale));
+
+        // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+
+
+        // 4. now add to list of matrices
+        modelTreeMatrices[i] = model;
+    }
+
+    //Code for adding rock isntances
+     //Code for adding rocks
+    unsigned int amount = 1000;
+    glm::mat4* modelMatrices;
+    modelMatrices = new glm::mat4[amount];
+    srand(glfwGetTime()); // initialize random seed	
+    float radius = 5.0;//how wide is our circle
+    float offset = 1.0f;//how far from our circle can the object deviate (higher = more scattered, lower = more circular)
+    for (unsigned int i = 0; i < amount; i++)
+    {
+        //origin variables
+        //set these to be added at the end of translate calculations to shift the tree origin to a specific point
+        float originx = 0.0f;
+        float originy = 0.0f;
+        float originz = 0.0f;
+
+        int verticeLocal = rand() % MAP_SIZE;
+        verticeLocal = verticeLocal - (i*10);
+        if (verticeLocal < 0) {
+            verticeLocal = rand() % MAP_SIZE + i*10;
+        }
+        if (verticeLocal > MAP_SIZE) {
+            verticeLocal = MAP_SIZE % verticeLocal;
+        }
+
+
+        glm::mat4 model = glm::mat4(1.0f);
+        float x = (terrainVertices[verticeLocal][0]) * terrainSize;
+        float y = (terrainVertices[verticeLocal][1]) * terrainSize;
+        float z = (terrainVertices[verticeLocal][2]) * terrainSize;
+        model = glm::translate(model, glm::vec3(x + originx, y + originy, z + originz));
+
+        // 2. scale: scale between 0.05 and 0.25f
+        float scale = static_cast<float>((rand() % 40) / 5000.0);
+        model = glm::scale(model, glm::vec3(scale));
+
+        // 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+        float rotAngle = static_cast<float>((rand() % 360));
+        model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+        // 4. now add to list of matrices
+        modelMatrices[i] = model;
+    }
+
+    //Skybox Cubemap------------------------------------------------------------------------------
 
 
 
-
-    //----
-
-
-    //Skybox Cubemap
 
     //pbr lighting
     float lightIterate = 10;
@@ -321,24 +460,18 @@ int main()
         glCullFace(GL_BACK);
 
 
-
+        //Terrain----------------------------------------------------
         terrainShader.use();
         model = mat4(1.0f);
+        model = glm::scale(model, glm::vec3(terrainSize));
         view = lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp); //Sets the position of the viewer, the movement direction in relation to it & the world up direction
         terrainShader.setMat4("projection", projection);
         terrainShader.setMat4("view", view);
         terrainShader.setMat4("model", model);
 
-        //Drawing Terrain
-        glBindVertexArray(terrainVAO);
-        //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        for (unsigned strip = 0; strip < numStrips; strip++)
-        {
-            glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
-                numTrisPerStrip + 2,   // number of indices to render
-                GL_UNSIGNED_INT,     // index data type
-                (void*)(sizeof(unsigned) * (numTrisPerStrip + 2) * strip)); // offset to starting index
-        }
+        //Drawing
+        glBindVertexArray(VAOs[0]);
+        glDrawElements(GL_TRIANGLES, MAP_SIZE * 32, GL_UNSIGNED_INT, 0);
 
         // view/projection transformations
         view = lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp); //Sets the position of the viewer, the movement direction in relation to it & the world up direction
@@ -351,7 +484,7 @@ int main()
         //Looking straight forward
         model = rotate(model, radians(0.0f), vec3(1.0f, 0.0f, 0.0f));
         //Elevation to look upon terrain
-        model = translate(model, vec3(0.0f, -2.f, -1.5f));
+        model = translate(model, vec3(0.0f, 4.f, -1.5f));
 
 
         //Transformations & Drawing
@@ -366,17 +499,23 @@ int main()
         //Rock.Draw(Shaders);
         Sign.Draw(Shaders);
 
-        //Tree (changes MVP in relation to past values)
+        //Rock (changes MVP in relation to past values)
         for (unsigned int i = 0; i < amount; i++)
         {            
             Shaders.setMat4("model", modelMatrices[i]);
             Rock.Draw(Shaders);//PUT ANY MODEL HERE TO HAVE THE INSTANCING RUN OVER IT
-            
+        }
+
+        //load Trees 
+        for (unsigned int i = 0; i < treeAmount; i++)
+        {
+            Shaders.setMat4("model", modelTreeMatrices[i]);
+            Tree.Draw(Shaders);//PUT ANY MODEL HERE TO HAVE THE INSTANCING RUN OVER IT
         }
         //move Light as sun
         
-        float lightRadius = 100; //higher = further from world centre
-        lightPositions[0] = vec3((lightX/ 10), (lightY/ 10), (0.0f));
+        float lightRadius = 20; //higher = further from world centre
+        lightPositions[0] = vec3((lightX/ 1), (lightY/ 20), (-5.0f));
 
         float lightDiff = 0.1f; // the higher the number, the slower the sun rotates
 
@@ -389,10 +528,10 @@ int main()
         }
 
         if (lightDirY == 0) {
-            lightY = lightY - lightDiff;
+            //lightY = lightY - lightDiff;
         }
         else {
-            lightY = lightY + lightDiff;
+            //lightY = lightY + lightDiff;
         }
 
         if (lightX >= lightRadius) {
@@ -526,7 +665,7 @@ void ProcessUserInput(GLFWwindow* WindowIn)
     }
     if (glfwGetKey(WindowIn, GLFW_KEY_F) == GLFW_PRESS)
     {
-        generateTerrain();
+
     }
 }
 
@@ -560,94 +699,6 @@ unsigned int loadCubemap(vector<std::string> faces)
 
     return textureID;
 }
-
-void generateTerrain() {
-
-    //Assigning perlin noise type for map
-    FastNoiseLite TerrainNoise;
-    //Setting noise type to Perlin
-    TerrainNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    //Sets the noise scale
-    TerrainNoise.SetFrequency(0.05f);
-    //Generates a random seed between integers 0 & 100
-    int terrainSeed = rand() % 100;
-    //Sets seed for noise
-    TerrainNoise.SetSeed(terrainSeed);
-
-    // load and create a texture
-// -------------------------
-// load image, create texture and generate mipmaps
-// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    stbi_set_flip_vertically_on_load(true);
-    int width, height, nrChannels;
-
-
-
-
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
-
-
-    std::vector<float> vertices;
-    float yScale = 10.0f, yShift = 10.0f;
-    int rez = 1;
-    width = 128;
-    height = 128;
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-
-
-            GLfloat y = TerrainNoise.GetNoise((float)j, (float)i);
-
-            // vertex
-            vertices.push_back(-height / 2.0f + height * i / (float)height);   // vx
-            vertices.push_back(y * yScale - yShift);   // vy
-            vertices.push_back(-width / 2.0f + width * j / (float)width);   // vz
-        }
-    }
-    std::cout << "Loaded " << vertices.size() / 3 << " vertices" << std::endl;
-
-    std::vector<unsigned> indices;
-    for (unsigned i = 0; i < height - 1; i += rez)
-    {
-        for (unsigned j = 0; j < width; j += rez)
-        {
-            for (unsigned k = 0; k < 2; k++)
-            {
-                indices.push_back(j + width * (i + k * rez));
-            }
-        }
-    }
-    std::cout << "Loaded " << indices.size() << " indices" << std::endl;
-
-    const int numStrips = (height - 1) / rez;
-    const int numTrisPerStrip = (width / rez) * 2 - 2;
-    std::cout << "Created lattice of " << numStrips << " strips with " << numTrisPerStrip << " triangles each" << std::endl;
-    std::cout << "Created " << numStrips * numTrisPerStrip << " triangles total" << std::endl;
-
-    // first, configure the cube's VAO (and terrainVBO + terrainIBO)
-    unsigned int terrainVAO, terrainVBO, terrainIBO;
-    glGenVertexArrays(1, &terrainVAO);
-    glBindVertexArray(terrainVAO);
-
-    glGenBuffers(1, &terrainVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glGenBuffers(1, &terrainIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainIBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
-
-
-}
-
-
 
 
 

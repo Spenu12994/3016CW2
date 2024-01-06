@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>F:\store\3016 cw2\lib;F:\store\3016 cw2\include;F:\store\3016 cw2\Assimp\Source\assimp\include;F:\store\3016 cw2\Assimp\Binaries\include;F:\store\3016 cw2\Assimp\Binaries\lib\Release;$(IncludePath)</IncludePath>
-    <LibraryPath>F:\store\3016 cw2\lib;F:\store\3016 cw2\include;F:\store\3016 cw2\Assimp\Source\assimp\include;F:\store\3016 cw2\Assimp\Binaries\include;F:\store\3016 cw2\Assimp\Binaries\lib\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Public\OpenGL\lib;C:\Users\Public\OpenGL\include;C:\Users\Public\OpenGL\Assimp\Source\assimp\include;C:\Users\Public\OpenGL\Assimp\Binaries\include;C:\Users\Public\OpenGL\Assimp\Binaries\lib\Release;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Public\OpenGL\lib;C:\Users\Public\OpenGL\include;C:\Users\Public\OpenGL\Assimp\Source\assimp\include;C:\Users\Public\OpenGL\Assimp\Binaries\include;C:\Users\Public\OpenGL\Assimp\Binaries\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -133,9 +133,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="shaders\fragmentShader.frag" />
+    <None Include="shaders\terrainFragShader.frag" />
+    <None Include="shaders\terrainVertShader.vert" />
     <None Include="shaders\vertexShader.vert" />
-    <None Include="terrainFragShader.frag" />
-    <None Include="terrainVertShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />

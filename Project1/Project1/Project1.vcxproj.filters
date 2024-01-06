@@ -24,10 +24,10 @@
     <None Include="shaders\fragmentShader.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="terrainFragShader.frag">
+    <None Include="shaders\terrainFragShader.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="terrainVertShader.vert">
+    <None Include="shaders\terrainVertShader.vert">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

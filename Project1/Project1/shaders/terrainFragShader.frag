@@ -1,11 +1,13 @@
 #version 460
 
+
+//Colour value to send to next stage
 out vec4 FragColor;
 
-in float Height;
+//Colour coordinates from last stage
+in vec3 colourFrag;
 
 void main()
 {
-    float h = (Height + 16)/32.0f;	// shift and scale the height into a grayscale value
-    FragColor = vec4(h, h, h, 1.0);
-}
+    FragColor = vec4(colourFrag, 1.0f);
+} 

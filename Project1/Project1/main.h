@@ -12,4 +12,3 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 void SetMatrices(Shader& ShaderProgramIn);
-void generateTerrain();
