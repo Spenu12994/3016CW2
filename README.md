@@ -58,6 +58,7 @@ https://learnopengl.com/<br>
 
 This whole playlist was a great inspiration to see how a world is grown from pieces in OpenGL to eventually form a game:<br>
 https://www.youtube.com/watch?v=yNYwZMmgTJk&list=PLRIWtICgwaX0u7Rf9zkZhLoLuZVfUksDP&index=15<br>
+![image](https://github.com/Spenu12994/3016CW2/assets/91668500/067ae517-be93-41da-b2b8-6f9c847b39dd)<br>
 
 Generated Terrain:<br>
 https://www.gamedev.net/blogs/entry/2276775-a-small-walk-inside-my-procedurally-generated-terrain/ <br>
