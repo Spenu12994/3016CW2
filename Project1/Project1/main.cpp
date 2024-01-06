@@ -93,6 +93,8 @@ const int trianglesPerSquare = 2;
 //Amount of triangles on map
 const int trianglesGrid = squaresRow * squaresRow * trianglesPerSquare;
 
+float RotateSpeed = 0.05f;
+
 float terrainSize = 5.0f;
 
 int main()
@@ -508,7 +510,7 @@ int main()
         //Elevation to look upon terrain
         model = translate(model, vec3(0.0f, 3.f, -1.0f));
 
-        signatureRotate += 0.05f;
+        signatureRotate += RotateSpeed;
         model = rotate(model, radians(signatureRotate), vec3(0.0f, 1.0f, 0.0f));
 
         //Transformations & Drawing
@@ -688,7 +690,11 @@ void ProcessUserInput(GLFWwindow* WindowIn)
     }
     if (glfwGetKey(WindowIn, GLFW_KEY_F) == GLFW_PRESS)
     {
-
+        RotateSpeed += 0.05f;
+    }
+    if (glfwGetKey(WindowIn, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        RotateSpeed -= 0.05f;
     }
 }
 
