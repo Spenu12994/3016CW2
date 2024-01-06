@@ -1,8 +1,10 @@
 <h1>Comp 3016 course work 2 github page</h1>
 <h2></h2>
-youtube video: https://youtu.be/XoH1ISV4niU
-Github: https://github.com/Spenu12994/3016CW2.git
+youtube video: https://youtu.be/XoH1ISV4niU<br>
+Github: https://github.com/Spenu12994/3016CW2.git<br>
 
+<h2>What I started with</h2><br>
+Starting with an adapted version of lab 5, the main was built up from the solution code for model loading and adapted for better model loading, as well as the rest of the application. 
 
 <h2>Application Contents</h2>
 <h3>Theme</h3>
