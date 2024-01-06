@@ -34,19 +34,19 @@ Our FastNoiseList file (from the module labs sessions) handle the perlin noise g
 the first set of shaders (vertex and fragment) handle our pbr lighting, model shading and most shading for the application.
 the second set of shaders(terrainFrag, terrainVert) are made to specifically handle our colour data for our randomly generated vertices and indices, allowing us to uniquely colour biomes.
 
-<h3>"Gameplay"</h3>
-The game is controlled with the following:
-WASD - Movement
-Mouse - Aim
-R and F - Adjust Signiture Model attributes (animation speed and scale);
-Esc - Quit
-
+<h3>Gameplay</h3>
+The game is controlled with the following:<br>
+WASD - Movement<br>
+Mouse - Aim<br>
+R and F - Adjust Signiture Model attributes (animation speed and scale);<br>
+Esc - Quit<br>
+<br>
 <h3>Exception Handling</h3>
 Our model loading searches for 
 
-![image](https://github.com/Spenu12994/3016CW2/assets/91668500/bc24a00d-6279-4754-be38-89ea22eac34b)
+![image](https://github.com/Spenu12994/3016CW2/assets/91668500/bc24a00d-6279-4754-be38-89ea22eac34b)<br>
 
-![image](https://github.com/Spenu12994/3016CW2/assets/91668500/13861b20-c7fc-4e74-b197-cf259c7b25bf)
+![image](https://github.com/Spenu12994/3016CW2/assets/91668500/13861b20-c7fc-4e74-b197-cf259c7b25bf)<br>
 
 
 <h3>Inspirations</h3>
