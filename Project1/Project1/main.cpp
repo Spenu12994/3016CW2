@@ -223,15 +223,7 @@ int main()
 // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     stbi_set_flip_vertically_on_load(true);
     int width, height, nrChannels;
-    unsigned char* data = stbi_load("heightmaps/iceland_heightmap.png", &width, &height, &nrChannels, 4);
-    if (data)
-    {
-        std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
+
 
 
 
@@ -244,7 +236,6 @@ int main()
     int rez = 1;
     width = 128;
     height = 128;
-    unsigned bytePerPixel = nrChannels;
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -260,7 +251,6 @@ int main()
         }
     }
     std::cout << "Loaded " << vertices.size() / 3 << " vertices" << std::endl;
-    stbi_image_free(data);
 
     std::vector<unsigned> indices;
     for (unsigned i = 0; i < height - 1; i += rez)
@@ -534,6 +524,10 @@ void ProcessUserInput(GLFWwindow* WindowIn)
     {
         cameraPosition += normalize(cross(cameraFront, cameraUp)) * movementSpeed;
     }
+    if (glfwGetKey(WindowIn, GLFW_KEY_F) == GLFW_PRESS)
+    {
+        generateTerrain();
+    }
 }
 
 //function to load and set cubemap
@@ -567,7 +561,91 @@ unsigned int loadCubemap(vector<std::string> faces)
     return textureID;
 }
 
+void generateTerrain() {
 
+    //Assigning perlin noise type for map
+    FastNoiseLite TerrainNoise;
+    //Setting noise type to Perlin
+    TerrainNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+    //Sets the noise scale
+    TerrainNoise.SetFrequency(0.05f);
+    //Generates a random seed between integers 0 & 100
+    int terrainSeed = rand() % 100;
+    //Sets seed for noise
+    TerrainNoise.SetSeed(terrainSeed);
+
+    // load and create a texture
+// -------------------------
+// load image, create texture and generate mipmaps
+// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+    stbi_set_flip_vertically_on_load(true);
+    int width, height, nrChannels;
+
+
+
+
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+
+
+    std::vector<float> vertices;
+    float yScale = 10.0f, yShift = 10.0f;
+    int rez = 1;
+    width = 128;
+    height = 128;
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+
+
+            GLfloat y = TerrainNoise.GetNoise((float)j, (float)i);
+
+            // vertex
+            vertices.push_back(-height / 2.0f + height * i / (float)height);   // vx
+            vertices.push_back(y * yScale - yShift);   // vy
+            vertices.push_back(-width / 2.0f + width * j / (float)width);   // vz
+        }
+    }
+    std::cout << "Loaded " << vertices.size() / 3 << " vertices" << std::endl;
+
+    std::vector<unsigned> indices;
+    for (unsigned i = 0; i < height - 1; i += rez)
+    {
+        for (unsigned j = 0; j < width; j += rez)
+        {
+            for (unsigned k = 0; k < 2; k++)
+            {
+                indices.push_back(j + width * (i + k * rez));
+            }
+        }
+    }
+    std::cout << "Loaded " << indices.size() << " indices" << std::endl;
+
+    const int numStrips = (height - 1) / rez;
+    const int numTrisPerStrip = (width / rez) * 2 - 2;
+    std::cout << "Created lattice of " << numStrips << " strips with " << numTrisPerStrip << " triangles each" << std::endl;
+    std::cout << "Created " << numStrips * numTrisPerStrip << " triangles total" << std::endl;
+
+    // first, configure the cube's VAO (and terrainVBO + terrainIBO)
+    unsigned int terrainVAO, terrainVBO, terrainIBO;
+    glGenVertexArrays(1, &terrainVAO);
+    glBindVertexArray(terrainVAO);
+
+    glGenBuffers(1, &terrainVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, &terrainIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainIBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
+
+
+}
 
 
 

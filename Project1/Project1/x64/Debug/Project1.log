@@ -1,6 +1,11 @@
 ﻿  main.cpp
 F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(173,22): warning C4244: 'argument': conversion from 'double' to 'unsigned int', possible loss of data
-F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(266,28): warning C4018: '<': signed/unsigned mismatch
-F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(268,32): warning C4018: '<': signed/unsigned mismatch
-F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(345,40): warning C4018: '<': signed/unsigned mismatch
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(256,28): warning C4018: '<': signed/unsigned mismatch
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(258,32): warning C4018: '<': signed/unsigned mismatch
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(335,40): warning C4018: '<': signed/unsigned mismatch
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(225,24): warning C4101: 'nrChannels': unreferenced local variable
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(613,28): warning C4018: '<': signed/unsigned mismatch
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(615,32): warning C4018: '<': signed/unsigned mismatch
+F:\store\3016 cw2\3016CW2\Project1\Project1\main.cpp(582,24): warning C4101: 'nrChannels': unreferenced local variable
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Project1.vcxproj -> F:\store\3016 cw2\3016CW2\Project1\x64\Debug\Project1.exe
