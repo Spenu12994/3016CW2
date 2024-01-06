@@ -6,11 +6,11 @@ youtube video:
 
 <h2>Application Contents</h2>
 <h3>Theme</h3>
-The theme for this project was to generate a simple forest using procedural generation, this application uses perlin noise to generate a small world, populated with foliage and rocks for the user to browse. 
+The theme for this project was to generate a simple forest using procedural generation, this application uses perlin noise to generate a small world, populated with foliage and rocks for the user to browse. <br>
 
 <h3>Executable Usage</h3>
 
-![image](https://github.com/Spenu12994/3016CW2/assets/91668500/f3ca3644-b84b-4487-9c34-eb22d6f205d0)
+![image](https://github.com/Spenu12994/3016CW2/assets/91668500/f3ca3644-b84b-4487-9c34-eb22d6f205d0)<br>
 
 The executable zip file comes as above, starting the app can simply be done by opening Project1.exe.
 To generate a new random world, close and reopen the application.
@@ -50,19 +50,19 @@ Our model loading searches for
 
 
 <h3>Inspirations</h3>
-as this application is very close to a software demo, not much creative freedom was employed. As such inspiration came in the form of other openGL applications.
+as this application is very close to a software demo, not much creative freedom was employed. As such inspiration came in the form of other openGL applications.<br>
 
-The guides on learnOpenGl gave a great understanding of the workings of various bits of code, and these deep understandings allowed for further experimentation and adaption of code that i couldn't even comprehend at the start of this project.
+The guides on learnOpenGl gave a great understanding of the workings of various bits of code, and these deep understandings allowed for further experimentation and adaption of code that i couldn't even comprehend at the start of this project.<br>
 
-https://learnopengl.com/
+https://learnopengl.com/<br>
 
-This whole playlist was a great inspiration to see how a world is grown from pieces in OpenGL to eventually form a game:
-https://www.youtube.com/watch?v=yNYwZMmgTJk&list=PLRIWtICgwaX0u7Rf9zkZhLoLuZVfUksDP&index=15
+This whole playlist was a great inspiration to see how a world is grown from pieces in OpenGL to eventually form a game:<br>
+https://www.youtube.com/watch?v=yNYwZMmgTJk&list=PLRIWtICgwaX0u7Rf9zkZhLoLuZVfUksDP&index=15<br>
 
-Generated Terrain:
-https://www.gamedev.net/blogs/entry/2276775-a-small-walk-inside-my-procedurally-generated-terrain/ 
-https://opengl-notes.readthedocs.io/en/latest/topics/complex-objects/procedural-generation.html
-https://github.com/stanfortonski/Procedural-Terrain-Generator-OpenGL/tree/master 
+Generated Terrain:<br>
+https://www.gamedev.net/blogs/entry/2276775-a-small-walk-inside-my-procedurally-generated-terrain/ <br>
+https://opengl-notes.readthedocs.io/en/latest/topics/complex-objects/procedural-generation.html<br>
+https://github.com/stanfortonski/Procedural-Terrain-Generator-OpenGL/tree/master <br>
 
 
 
