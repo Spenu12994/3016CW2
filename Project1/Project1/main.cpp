@@ -30,6 +30,7 @@
 #include "model.h"
 #include "main.h"
 #include "FastNoiseLite.h"
+#include <random>
 
 
 using namespace std;
@@ -54,7 +55,7 @@ GLuint Buffers[NumBuffers];
 
 //Transformations
 //Relative position within world space
-vec3 cameraPosition = vec3(0.0f, 0.0f, 3.0f);
+vec3 cameraPosition = vec3(0.0f, 5.0f, 3.0f);
 //The direction of travel
 vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
 //Up position within world space
@@ -176,15 +177,24 @@ int main()
     //Sets the noise scale
     TerrainNoise.SetFrequency(0.05f);
     //Generates a random seed between integers 0 & 100
-    int terrainSeed = rand() % 100;
+
+    random_device rd;
+    mt19937 mt(rd());
+    uniform_real_distribution<double> dist(0, 100);
+
+    int randTerSeed = dist(mt);
+
+    int terrainSeed = randTerSeed;
     //Sets seed for noise
     TerrainNoise.SetSeed(terrainSeed);
 
+
+    int randBioSeed = dist(mt);
     //Biome noise
     FastNoiseLite BiomeNoise;
     BiomeNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
     BiomeNoise.SetFrequency(0.05f);
-    int biomeSeed = rand() % 100;
+    int biomeSeed = randBioSeed;
     TerrainNoise.SetSeed(biomeSeed);
 
     // load and create a texture
@@ -364,8 +374,11 @@ int main()
         float originy = 0.0f;
         float originz = 0.0f;
 
+        random_device rd;
+        mt19937 mt(rd());
+        uniform_real_distribution<double> dist(0, MAP_SIZE);
 
-        int verticeLocal = rand() % MAP_SIZE;
+        int verticeLocal = dist(mt);
 
 
         glm::mat4 model = glm::mat4(1.0f);
@@ -401,7 +414,13 @@ int main()
         float originy = 0.0f;
         float originz = 0.0f;
 
-        int verticeLocal = rand() % MAP_SIZE;
+        random_device rd;
+        mt19937 mt(rd());
+        uniform_real_distribution<double> dist(0, MAP_SIZE);
+
+        int verticeLocal = dist(mt);
+
+
         verticeLocal = verticeLocal - (i*10);
         if (verticeLocal < 0) {
             verticeLocal = rand() % MAP_SIZE + i*10;
@@ -441,6 +460,9 @@ int main()
     int lightHeightDiff = 100; 
     int lightDirX = 0;//0=left 1= right
     int lightDirY = 0; //0=down 1=up
+
+    float signatureRotate = 0;
+
     //Render loop
     while (glfwWindowShouldClose(window) == false)
     {
@@ -480,12 +502,14 @@ int main()
         //Model matrix
         model = mat4(1.0f);
         //Scaling to zoom in
-        model = scale(model, vec3(1.0f, 1.0f, 1.0f));
+        model = scale(model, vec3(2.0f));
         //Looking straight forward
         model = rotate(model, radians(0.0f), vec3(1.0f, 0.0f, 0.0f));
         //Elevation to look upon terrain
-        model = translate(model, vec3(0.0f, 4.f, -1.5f));
+        model = translate(model, vec3(0.0f, 3.f, -1.0f));
 
+        signatureRotate += 0.05f;
+        model = rotate(model, radians(signatureRotate), vec3(0.0f, 1.0f, 0.0f));
 
         //Transformations & Drawing
         //Viewer orientation
@@ -494,9 +518,8 @@ int main()
         Shaders.setMat4("projection", projection);
         Shaders.setMat4("view", view);
         Shaders.setMat4("model", model);
-        
-        //Rock
-        //Rock.Draw(Shaders);
+
+        //draw signature
         Sign.Draw(Shaders);
 
         //Rock (changes MVP in relation to past values)
