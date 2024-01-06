@@ -52,5 +52,8 @@
     <ClInclude Include="model.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="FastNoiseLite.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

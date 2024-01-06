@@ -29,7 +29,7 @@
 //GENERAL
 #include "model.h"
 #include "main.h"
-#include <FastNoiseLite.h>
+#include "FastNoiseLite.h"
 
 
 using namespace std;
@@ -237,20 +237,25 @@ int main()
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
+
+    
     std::vector<float> vertices;
-    float yScale = 64.0f / 256.0f, yShift =40.0f;
+    float yScale = 10.0f, yShift =10.0f;
     int rez = 1;
+    width = 128;
+    height = 128;
     unsigned bytePerPixel = nrChannels;
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
-            unsigned char* pixelOffset = data + (j + width * i) * bytePerPixel;
-            unsigned char y = pixelOffset[0];
+            
+
+            GLfloat y = TerrainNoise.GetNoise((float)j, (float)i);
 
             // vertex
             vertices.push_back(-height / 2.0f + height * i / (float)height);   // vx
-            vertices.push_back((int)y * yScale - yShift);   // vy
+            vertices.push_back(y * yScale - yShift);   // vy
             vertices.push_back(-width / 2.0f + width * j / (float)width);   // vz
         }
     }
