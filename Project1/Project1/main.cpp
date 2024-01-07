@@ -504,7 +504,7 @@ int main()
         //Model matrix
         model = mat4(1.0f);
         //Scaling to zoom in
-        model = scale(model, vec3(2.0f));
+        model = scale(model, vec3(2.0f + RotateSpeed));
         //Looking straight forward
         model = rotate(model, radians(0.0f), vec3(1.0f, 0.0f, 0.0f));
         //Elevation to look upon terrain
